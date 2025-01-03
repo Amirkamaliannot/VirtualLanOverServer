@@ -112,9 +112,9 @@ int main() {
             
             }else {
 
-                std::cout << "not valid!! \n";
-            };            
-            if (steam.isLobbyValid(steam.GetCurrentLobby())) {
+                std::cout << "not valid!! \n" ;
+            };             
+            if (steam.isLobbyValid(steam.GetCurrentLobby())){
                 std::cout << "valid \n";
             
             }else {
