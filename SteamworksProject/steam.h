@@ -23,18 +23,55 @@ struct steamUser
 class Steam {
 
 public:
+
+
     Steam() {
 
         if (!SteamAPI_Init()) {
             std::cerr << "Failed to initialize Steam API. Make sure Steam is running.\n";
         }
+
+        userID = SteamUser()->GetSteamID();
+
+        SearchLobbies();
+        while (true) {
+            SteamAPI_RunCallbacks();
+            // Add a delay to prevent busy-waiting
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            std::cout << "...\n";
+            if (isSearchCreated()) {
+                break;
+            }
+        }
+        if (LobbyID == k_steamIDNil) {
+            CreateLobby(6);
+            while (true) {
+                SteamAPI_RunCallbacks();
+                // Add a delay to prevent busy-waiting
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                std::cout << "...\n";
+                if (isLobbyCreated()) {
+                    break;
+                }
+            }
+        }
+
+        std::vector<steamUser> list = ListLobbyMembers(LobbyID);
+        for (int i = 0; i < list.size(); i++) {
+            std::cout << "ID:" << list[i].SteamID.ConvertToUint64() << " | " << list[i].IP << " | " << list[i].Username <<  "\n";
+        }
+
+
+
     }
     ~Steam() {
+        END = true;
         SteamAPI_Shutdown();
     }
 
     string getUsername();
     CSteamID getUserID();
+    string getIP();
     vector<steamUser> getFriendsList();
     void CreateLobby(int capacity);
     void DeleteLobby();
@@ -48,13 +85,16 @@ public:
     void SearchLobbies();
     bool SendDataToUser(CSteamID targetUser, const std::string& message);
     void ListenForData(void(*callback)(BYTE*, DWORD));
+    void startListening(void (*callback)(BYTE*, DWORD));
     bool isLobbyCreated() {return isLobbyCreated_m;}
     bool isSearchCreated();
     bool isJoinDone();
+
     string convertUserIdToIp(CSteamID user);
 
 
 private:
+    CSteamID userID;
     CSteamID LobbyID = k_steamIDNil;
     CCallResult<Steam, LobbyCreated_t> m_LobbyCreated;
     CCallResult<Steam, LobbyMatchList_t> m_CallbackLobbyMatchList;
@@ -62,6 +102,7 @@ private:
     bool isLobbyCreated_m = false;
     bool isSearchDone_m= false;
     bool isJoinDone_m= false;
+    bool END = false;
 
     void OnLobbyCreated(LobbyCreated_t* pCallback, bool bIOFailure);
     void OnLobbyMatchList(LobbyMatchList_t* pLobbyMatchList, bool bIOFailure);

@@ -14,6 +14,7 @@
 #include <vector>
 #include "Packet.h"
 #include "wintun.h"
+#include <codecvt>
 #include <iphlpapi.h>
 #include "WintunManager.h"
 #pragma comment(lib, "iphlpapi.lib")
@@ -23,18 +24,17 @@
 void callbackLitentToInterface(BYTE* packet, DWORD size) {
 
     Packet temp = Packet(packet, false, size);
-    temp.printIP();
+    //temp.printIP();
 
-    std::cout << "ok\n";
+    //std::cout << "ok\n";
 };
 
 void callbackLiteningToSteam(BYTE* packet, DWORD size) {
 
-    for (int i = 0; i < (int)size; i++) {
-        std::cout << (char)packet[i];
-    }
-    std::cout << "\n";
-
+    //for (int i = 0; i < (int)size; i++) {
+    //    std::cout << (char)packet[i];
+    //}
+    std::cout << "recive\n";
 
 }
 
@@ -42,11 +42,19 @@ void callbackLiteningToSteam(BYTE* packet, DWORD size) {
 int main() {
 
 
-    //WintunManager wintunManager(L"AmirVPN", L"10.20.30.40", L"255.0.0.0");
-    //wintunManager.startListening(callback);
-
-
     Steam steam;
+    steam.getIP();
+    std::wstring ip = std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(steam.getIP());
+
+    WintunManager wintunManager(L"AmirVPN", ip, L"255.0.0.0");
+    std::cout << "start listening on interface\n";
+    wintunManager.startListening(callbackLitentToInterface);
+
+    std::cout << "start listening on steam\n";
+    steam.startListening(callbackLiteningToSteam);
+
+
+
 
     while (true) {
         std::cout << "\nEnter command: ";

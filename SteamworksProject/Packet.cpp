@@ -15,7 +15,6 @@ void Packet::create(bool ETHERNET_FRAME){
 
     // Extract IP header
     ip_header = (struct IP_header*)(raw_pkt + ETHERNET_HEADER_SIZE);
-    std::cout << *(BYTE*)(raw_pkt + ETHERNET_HEADER_SIZE);
 
     // Validate IHL
     if (ip_header->ihl < 5) {
@@ -33,8 +32,6 @@ void Packet::create(bool ETHERNET_FRAME){
     // Determine the protocol
     if (ip_header->protocol == 6) { // TCP
         tcp_header = reinterpret_cast<struct TCP_header*>(raw_pkt + ETHERNET_HEADER_SIZE + ip_header_length);
-
-        std::cout << (tcp_header->offset_reserved >> 4) * 4 << "\n";
         trans_header_length = (tcp_header->offset_reserved >> 4) * 4;
         payload = (raw_pkt + ETHERNET_HEADER_SIZE + ip_header_length + trans_header_length);
     }
@@ -45,7 +42,6 @@ void Packet::create(bool ETHERNET_FRAME){
     }
 
     payload_length = packet_length - (ETHERNET_HEADER_SIZE + ip_header_length + trans_header_length);
-    std::cout << "payload size:" << payload_length << "\n";
 
 
     // Convert source and destination IP addresses to strings

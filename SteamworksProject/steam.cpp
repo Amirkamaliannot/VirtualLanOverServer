@@ -9,8 +9,12 @@ string Steam::getUsername()
 
 CSteamID Steam::getUserID()
 {
-    CSteamID userID = SteamUser()->GetSteamID();
     return userID;
+}
+
+string Steam::getIP()
+{
+    return convertUserIdToIp(userID);
 }
 
 vector<steamUser> Steam::getFriendsList()
@@ -162,21 +166,29 @@ bool Steam::SendDataToUser(CSteamID targetUser, const std::string& message)
 void Steam::ListenForData(void(*callback)(BYTE*, DWORD))
 {
     uint32 messageSize;
+    while (!END) {
+        // Check if there are packets available
+        while (SteamNetworking()->IsP2PPacketAvailable(&messageSize)) {
+            char* buffer = new char[messageSize];  // Allocate memory for the message
+            uint32 bytesRead;
+            CSteamID sender;
 
-    // Check if there are packets available
-    while (SteamNetworking()->IsP2PPacketAvailable(&messageSize)) {
-        char* buffer = new char[messageSize];  // Allocate memory for the message
-        uint32 bytesRead;
-        CSteamID sender;
+            // Read the packet
+            if (SteamNetworking()->ReadP2PPacket(buffer, messageSize, &bytesRead, &sender)) {
+                // Process the message
+                callback((BYTE*)buffer, (DWORD)bytesRead);
+            }
 
-        // Read the packet
-        if (SteamNetworking()->ReadP2PPacket(buffer, messageSize, &bytesRead, &sender)) {
-            // Process the message
-            callback((BYTE*)buffer, (DWORD)bytesRead);
+            delete[] buffer;  // Clean up allocated memory
         }
-
-        delete[] buffer;  // Clean up allocated memory
+        std::this_thread::sleep_for(std::chrono::milliseconds(2));
     }
+}
+
+void Steam::startListening(void(*callback)(BYTE*, DWORD))
+{
+    std::thread listen(&Steam::ListenForData, this, callback);
+    listen.detach(); // Detach the thread if you don't want to join it later
 }
 
 bool Steam::isSearchCreated()
@@ -232,9 +244,16 @@ void Steam::OnLobbyMatchList(LobbyMatchList_t* pLobbyMatchList, bool bIOFailure)
     std::cout << "Found " << pLobbyMatchList->m_nLobbiesMatching << " lobbies." << std::endl;
 
     // Iterate through lobbies and print their IDs
-    for (int i = 0; i < (int)pLobbyMatchList->m_nLobbiesMatching; ++i) {
+    for (int i = 0; i < pLobbyMatchList->m_nLobbiesMatching; ++i) {
         CSteamID lobbyID = SteamMatchmaking()->GetLobbyByIndex(i);
-        std::cout << "Lobby ID: " << lobbyID.ConvertToUint64() << " member:" << getLobbyMemberCount(lobbyID) << std::endl;
+        std::cout << "Lobby ID: " << lobbyID.ConvertToUint64() << std::endl;
+
+        // Example: Automatically join the first lobby
+        if (i == 0) {
+            SteamMatchmaking()->JoinLobby(lobbyID);
+            LobbyID = SteamMatchmaking()->GetLobbyByIndex(0);
+            std::cout << "Joining lobby: " << lobbyID.ConvertToUint64() << std::endl;
+        }
     }
     isSearchDone_m = true;
 }
