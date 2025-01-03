@@ -20,13 +20,23 @@
 #pragma comment(lib, "ws2_32.lib")
 
 
-void callback(BYTE* packet, DWORD size) {
+void callbackLitentToInterface(BYTE* packet, DWORD size) {
 
     Packet temp = Packet(packet, false, size);
     temp.printIP();
 
     std::cout << "ok\n";
 };
+
+void callbackLiteningToSteam(BYTE* packet, DWORD size) {
+
+    for (int i = 0; i < (int)size; i++) {
+        std::cout << (char)packet[i];
+    }
+    std::cout << "\n";
+
+
+}
 
 
 int main() {
@@ -150,6 +160,22 @@ int main() {
                 std::cout << "ID:" << list[i].SteamID.ConvertToUint64() << " | " << list[i].Username << " | " << list[i].State << "\n";
             }
 
+        }
+
+        if (a == 10) {
+            std::cout << "Enter a Steam ID (64-bit integer): ";
+            uint64_t steamID64;
+            std::cin >> steamID64;
+            CSteamID steamID(steamID64);
+
+            if (steam.SendDataToUser(steamID, "hellow world")) {
+                std::cout << "sent\n";
+            };
+        }
+
+        if (a == 11) {
+            std::cout << "listening..\n";
+            steam.ListenForData(callbackLiteningToSteam);
         }
 
         if (a == 0) {

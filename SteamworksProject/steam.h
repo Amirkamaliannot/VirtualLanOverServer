@@ -6,6 +6,7 @@
 #include <chrono>
 #include <string>
 #include <vector>
+#include <windows.h>
 
 using namespace std;
 
@@ -165,6 +166,47 @@ public:
     }
 
 
+    bool SendDataToUser(CSteamID targetUser, const std::string& message) {
+        // Convert the message to a byte array
+        const void* pData = message.c_str();
+        uint32 dataSize = static_cast<uint32>(message.size());
+
+        // Send the message
+        bool success = SteamNetworking()->SendP2PPacket(
+            targetUser,          // Target user's SteamID
+            pData,               // Pointer to the message data
+            dataSize,            // Size of the message
+            k_EP2PSendReliable,  // Reliable send type
+            0                    // Channel to use (default is 0)
+        );
+
+        if (!success) {
+            std::cerr << "Failed to send message to user." << std::endl;
+        }
+
+        return success;
+    }
+
+    void ListenForData(void(*callback)(BYTE*, DWORD)) {
+        uint32 messageSize;
+
+        // Check if there are packets available
+        while (SteamNetworking()->IsP2PPacketAvailable(&messageSize)) {
+            char* buffer = new char[messageSize];  // Allocate memory for the message
+            uint32 bytesRead;
+            CSteamID sender;
+
+            // Read the packet
+            if (SteamNetworking()->ReadP2PPacket(buffer, messageSize, &bytesRead, &sender)) {
+                // Process the message
+                callback((BYTE*)buffer, (DWORD)bytesRead);
+            }
+
+            delete[] buffer;  // Clean up allocated memory
+        }
+    }
+
+
 private:
     CSteamID LobbyID = k_steamIDNil;
     CCallResult<Steam, LobbyCreated_t> m_LobbyCreated;
@@ -202,12 +244,6 @@ private:
         for (int i = 0; i < (int)pLobbyMatchList->m_nLobbiesMatching; ++i) {
             CSteamID lobbyID = SteamMatchmaking()->GetLobbyByIndex(i);
             std::cout << "Lobby ID: " << lobbyID.ConvertToUint64() << " member:" << getLobbyMemberCount(lobbyID) << std::endl;
-
-            //// Example: Automatically join the first lobby
-            //if (i == 0) {
-            //    SteamMatchmaking()->JoinLobby(lobbyID);
-            //    std::cout << "Joining lobby: " << lobbyID.ConvertToUint64() << std::endl;
-            //}
         }
         isSearchDone_m = true;
     }
