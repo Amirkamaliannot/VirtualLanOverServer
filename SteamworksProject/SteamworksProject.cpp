@@ -40,9 +40,8 @@ void callbackLitentToInterface(BYTE* packet, DWORD size) {
 
 void callbackLiteningToSteam(BYTE* packet, DWORD size) {
 
-    //for (int i = 0; i < (int)size; i++) {
-    //    std::cout << (char)packet[i];
-    //}
+
+    wintunManager.sendPacket(packet, size);
     std::cout << "recive\n";
 
 }

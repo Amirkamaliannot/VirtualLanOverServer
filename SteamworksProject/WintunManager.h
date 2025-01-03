@@ -64,6 +64,8 @@ public:
 
 
     bool Initialize();
+
+    void sendPacket(BYTE* pkt, DWORD size);
     WINTUN_ADAPTER_HANDLE CreateAdapter(const std::wstring& adapterName, const std::wstring& adapterType);
     WINTUN_SESSION_HANDLE StartSession(WINTUN_ADAPTER_HANDLE adapter);
     void DeleteAdapter(WINTUN_ADAPTER_HANDLE adapter);

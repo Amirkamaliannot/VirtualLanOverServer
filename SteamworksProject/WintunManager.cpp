@@ -23,6 +23,21 @@ bool WintunManager::Initialize()
 
 
 
+void WintunManager::sendPacket(BYTE* rawPacketData, DWORD packetSize)
+{
+    BYTE* packet = static_cast<BYTE*>(WintunAllocateSendPacket(Session, packetSize));
+    if (!packet) {
+        std::cerr << "Failed to allocate packet buffer." << std::endl;
+        return;
+    }
+
+    // Fill the packet
+    memcpy(packet, rawPacketData, packetSize);
+
+    WintunSendPacket(Session, packet);
+
+}
+
 WINTUN_ADAPTER_HANDLE WintunManager::CreateAdapter(const std::wstring& adapterName, const std::wstring& adapterType)
 {
     if (!WintunCreateAdapter) {
