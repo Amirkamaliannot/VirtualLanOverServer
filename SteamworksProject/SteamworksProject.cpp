@@ -20,13 +20,22 @@
 #pragma comment(lib, "iphlpapi.lib")
 #pragma comment(lib, "ws2_32.lib")
 
+Steam steam;
+std::wstring ip = std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(steam.getIP());
+WintunManager wintunManager(L"AmirVPN", ip, L"255.0.0.0");
 
 void callbackLitentToInterface(BYTE* packet, DWORD size) {
 
     Packet temp = Packet(packet, false, size);
-    //temp.printIP();
+    string dst_ip = temp.dst_ip;
 
-    //std::cout << "ok\n";
+    CSteamID steamID = steam.getUserbyIP(dst_ip);
+    if (steamID != k_steamIDNil) {
+
+        std::cout << "hi\n";
+        steam.SendDataToUser(steamID, packet, size);
+    }
+        
 };
 
 void callbackLiteningToSteam(BYTE* packet, DWORD size) {
@@ -39,14 +48,11 @@ void callbackLiteningToSteam(BYTE* packet, DWORD size) {
 }
 
 
+
+
 int main() {
 
 
-    Steam steam;
-    steam.getIP();
-    std::wstring ip = std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(steam.getIP());
-
-    WintunManager wintunManager(L"AmirVPN", ip, L"255.0.0.0");
     std::cout << "start listening on interface\n";
     wintunManager.startListening(callbackLitentToInterface);
 
@@ -183,9 +189,9 @@ int main() {
             std::cin >> steamID64;
             CSteamID steamID(steamID64);
 
-            if (steam.SendDataToUser(steamID, "hellow world")) {
-                std::cout << "sent\n";
-            };
+            //if (steam.SendDataToUser(steamID, "hellow world")) {
+            //    std::cout << "sent\n";
+            //};
         }
 
         if (a == 11) {

@@ -69,9 +69,12 @@ public:
         SteamAPI_Shutdown();
     }
 
+
+
     string getUsername();
     CSteamID getUserID();
     string getIP();
+    CSteamID getUserbyIP(string ip);
     vector<steamUser> getFriendsList();
     void CreateLobby(int capacity);
     void DeleteLobby();
@@ -83,7 +86,7 @@ public:
     int getLobbyMemberCount(CSteamID lobbyID);
     void EnterLobby(CSteamID lobbyID);
     void SearchLobbies();
-    bool SendDataToUser(CSteamID targetUser, const std::string& message);
+    bool SendDataToUser(CSteamID targetUser, const BYTE* data, uint32 dataSize);
     void ListenForData(void(*callback)(BYTE*, DWORD));
     void startListening(void (*callback)(BYTE*, DWORD));
     bool isLobbyCreated() {return isLobbyCreated_m;}

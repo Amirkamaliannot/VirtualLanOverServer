@@ -18,12 +18,6 @@
     <ClCompile Include="SteamworksProject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="classes.h">
-      <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="classes.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="wincap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

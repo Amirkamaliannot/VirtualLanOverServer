@@ -17,6 +17,17 @@ string Steam::getIP()
     return convertUserIdToIp(userID);
 }
 
+CSteamID Steam::getUserbyIP(string ip)
+{
+    vector<steamUser> list= ListLobbyMembers(LobbyID);
+    for (int i=0; i < list.size(); i++) {
+        if (ip == list[i].IP) {
+            return list[i].SteamID;
+        }
+    }
+    return k_steamIDNil;
+}
+
 vector<steamUser> Steam::getFriendsList()
 {
     int friendCount = SteamFriends()->GetFriendCount(k_EFriendFlagImmediate);
@@ -141,23 +152,19 @@ void Steam::SearchLobbies()
     m_CallbackLobbyMatchList.Set(hSteamAPICall, this, &Steam::OnLobbyMatchList);
 }
 
-bool Steam::SendDataToUser(CSteamID targetUser, const std::string& message)
+bool Steam::SendDataToUser(CSteamID targetUser, const BYTE* data, uint32 dataSize)
 {
-    // Convert the message to a byte array
-    const void* pData = message.c_str();
-    uint32 dataSize = static_cast<uint32>(message.size());
-
-    // Send the message
+    // Send the data
     bool success = SteamNetworking()->SendP2PPacket(
         targetUser,          // Target user's SteamID
-        pData,               // Pointer to the message data
-        dataSize,            // Size of the message
+        data,                // Pointer to the data buffer
+        dataSize,            // Size of the data buffer
         k_EP2PSendReliable,  // Reliable send type
         0                    // Channel to use (default is 0)
     );
 
     if (!success) {
-        std::cerr << "Failed to send message to user." << std::endl;
+        std::cerr << "Failed to send data to user." << std::endl;
     }
 
     return success;
