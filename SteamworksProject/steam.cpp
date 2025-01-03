@@ -85,7 +85,7 @@ vector<steamUser> Steam::ListLobbyMembers(CSteamID lobbyID)
     for (int i = 0; i < memberCount; ++i) {
         CSteamID memberID = SteamMatchmaking()->GetLobbyMemberByIndex(lobbyID, i);
         const char* memberName = SteamFriends()->GetFriendPersonaName(memberID);
-        steamUser user{ memberID, memberName, k_EPersonaStateOnline };
+        steamUser user{ memberID, memberName, k_EPersonaStateOnline, convertUserIdToIp(memberID)};
 
         list.push_back(user);
     }

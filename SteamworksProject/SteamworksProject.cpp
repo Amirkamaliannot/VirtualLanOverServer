@@ -55,8 +55,15 @@ int main() {
         //system("cls");
 
         if (a == 1) {
-            std::cout << steam.getUsername() <<"\n";
-            std::cout << steam.getUserID().ConvertToUint64() <<"\n";
+            //std::cout << steam.getUsername() <<"\n";
+            //std::cout << steam.getUserID().ConvertToUint64() <<"\n";
+
+            std::cout << "Enter a Steam ID (64-bit integer): ";
+            uint64_t steamID64;
+            std::cin >> steamID64;
+            CSteamID steamID(steamID64);
+            std::cout << steam.convertUserIdToIp(steamID);
+
         }
         if (a == 2) {
             std::vector<steamUser> list = steam.getFriendsList();
@@ -157,7 +164,7 @@ int main() {
 
             std::vector<steamUser> list = steam.ListLobbyMembers(steamID);
             for (int i = 0; i < list.size(); i++) {
-                std::cout << "ID:" << list[i].SteamID.ConvertToUint64() << " | " << list[i].Username << " | " << list[i].State << "\n";
+                std::cout << "ID:" << list[i].SteamID.ConvertToUint64() << " | " << list[i].Username << " | " << list[i].IP << "\n";
             }
 
         }
