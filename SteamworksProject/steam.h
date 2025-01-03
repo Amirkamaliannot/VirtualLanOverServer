@@ -51,17 +51,7 @@ public:
     bool isLobbyCreated() {return isLobbyCreated_m;}
     bool isSearchCreated();
     bool isJoinDone();
-
-    string convertUserIdToIp(CSteamID user) {
-        string idtext = to_string(user.ConvertToUint64());
-        string ip = "10";
-        for (int i = idtext.size() - 5; i < idtext.size(); i+=2) {
-            ip += '.';
-            ip += idtext[i-1];
-            ip += idtext[i];
-        }
-        return ip;
-    }
+    string convertUserIdToIp(CSteamID user);
 
 
 private:
