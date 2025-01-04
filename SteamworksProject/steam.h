@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <windows.h>
+#include <thread>
 
 using namespace std;
 
@@ -30,46 +31,53 @@ public:
         if (!SteamAPI_Init()) {
             std::cerr << "Failed to initialize Steam API. Make sure Steam is running.\n";
         }
-
         userID = SteamUser()->GetSteamID();
-
-        SearchLobbies();
-        while (true) {
-            SteamAPI_RunCallbacks();
-            // Add a delay to prevent busy-waiting
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-            std::cout << "...\n";
-            if (isSearchCreated()) {
-                break;
-            }
-        }
-        if (LobbyID == k_steamIDNil) {
-            CreateLobby(6);
-            while (true) {
-                SteamAPI_RunCallbacks();
-                // Add a delay to prevent busy-waiting
-                std::this_thread::sleep_for(std::chrono::milliseconds(500));
-                std::cout << "...\n";
-                if (isLobbyCreated()) {
-                    break;
-                }
-            }
-        }
-
-        std::vector<steamUser> list = ListLobbyMembers(LobbyID);
-        for (int i = 0; i < list.size(); i++) {
-            std::cout << "ID:" << list[i].SteamID.ConvertToUint64() << " | " << list[i].IP << " | " << list[i].Username <<  "\n";
-        }
-
+        steamLoop();
 
 
     }
+
     ~Steam() {
         END = true;
         SteamAPI_Shutdown();
     }
 
+    void steamLoop() {
 
+        std::thread steamThread(&Steam::runtime, this);
+        steamThread.detach(); // Detach the thread if you don't want to join it later
+    };
+
+    void runtime() {
+
+        while (!END) {
+            SearchLobbies();
+            while (true) {
+                SteamAPI_RunCallbacks();
+                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                if (isSearchCreated()) {
+                    break;
+                }
+            }
+            if (LobbyID == k_steamIDNil) {
+                CreateLobby(6);
+                while (true) {
+                    SteamAPI_RunCallbacks();
+                    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                    if (isLobbyCreated()) {
+                        break;
+                    }
+                }
+            }
+            updateListLobbyMembers(LobbyID);
+            lobbyMemberList = ListLobbyMembers();
+            for (int i = 0; i < lobbyMemberList.size(); i++) {
+                std::cout << "ID: " << lobbyMemberList[i].SteamID.ConvertToUint64() << " | " << lobbyMemberList[i].IP << " | " << lobbyMemberList[i].Username << "\n";
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+        }
+    };
 
     string getUsername();
     CSteamID getUserID();
@@ -80,7 +88,8 @@ public:
     void DeleteLobby();
     void LeaveCurrentLobby(CSteamID lobbyID);
     CSteamID GetCurrentLobby();
-    vector<steamUser> ListLobbyMembers(CSteamID lobbyID);
+    vector<steamUser> ListLobbyMembers();
+    void updateListLobbyMembers(CSteamID lobbyID);
     bool IsUserInLobby(CSteamID lobbyID, CSteamID userID);
     bool isLobbyValid(CSteamID lobbyID);
     int getLobbyMemberCount(CSteamID lobbyID);
@@ -98,6 +107,7 @@ public:
 
 private:
     CSteamID userID;
+    vector<steamUser> lobbyMemberList;
     CSteamID LobbyID = k_steamIDNil;
     CCallResult<Steam, LobbyCreated_t> m_LobbyCreated;
     CCallResult<Steam, LobbyMatchList_t> m_CallbackLobbyMatchList;

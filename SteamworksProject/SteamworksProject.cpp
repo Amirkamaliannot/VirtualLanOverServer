@@ -32,7 +32,7 @@ void callbackLitentToInterface(BYTE* packet, DWORD size) {
     CSteamID steamID = steam.getUserbyIP(dst_ip);
     if (steamID != k_steamIDNil) {
 
-        std::cout << "hi\n";
+        //std::cout << "hi\n";
         steam.SendDataToUser(steamID, packet, size);
     }
         
@@ -40,9 +40,7 @@ void callbackLitentToInterface(BYTE* packet, DWORD size) {
 
 void callbackLiteningToSteam(BYTE* packet, DWORD size) {
 
-
     wintunManager.sendPacket(packet, size);
-    std::cout << "recive\n";
 
 }
 
@@ -175,7 +173,7 @@ int main() {
             std::cin >> steamID64;
             CSteamID steamID(steamID64); 
 
-            std::vector<steamUser> list = steam.ListLobbyMembers(steamID);
+            std::vector<steamUser> list = steam.ListLobbyMembers();
             for (int i = 0; i < list.size(); i++) {
                 std::cout << "ID:" << list[i].SteamID.ConvertToUint64() << " | " << list[i].Username << " | " << list[i].IP << "\n";
             }
@@ -196,6 +194,15 @@ int main() {
         if (a == 11) {
             std::cout << "listening..\n";
             steam.ListenForData(callbackLiteningToSteam);
+        }
+
+        if (a == 12) {
+            std::cout << "Enter a Steam ID (64-bit integer): ";
+            uint64_t steamID64;
+            std::cin >> steamID64;
+            CSteamID steamID(steamID64);
+            cout <<steam.convertUserIdToIp(steamID) << "\n";
+
         }
 
         if (a == 0) {

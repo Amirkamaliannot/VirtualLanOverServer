@@ -19,7 +19,7 @@ string Steam::getIP()
 
 CSteamID Steam::getUserbyIP(string ip)
 {
-    vector<steamUser> list= ListLobbyMembers(LobbyID);
+    vector<steamUser> list= ListLobbyMembers();
     for (int i=0; i < list.size(); i++) {
         if (ip == list[i].IP) {
             return list[i].SteamID;
@@ -86,13 +86,17 @@ CSteamID Steam::GetCurrentLobby()
     }
 }
 
-vector<steamUser> Steam::ListLobbyMembers(CSteamID lobbyID)
+vector<steamUser> Steam::ListLobbyMembers()
+{
+    return lobbyMemberList;
+}
+void Steam::updateListLobbyMembers(CSteamID lobbyID)
 {
     vector<steamUser> list;
 
     if (!lobbyID.IsValid()) {
         std::cout << "Invalid lobby ID!" << std::endl;
-        return list;
+        return;
     }
 
     int memberCount = SteamMatchmaking()->GetNumLobbyMembers(lobbyID);
@@ -103,12 +107,14 @@ vector<steamUser> Steam::ListLobbyMembers(CSteamID lobbyID)
         steamUser user{ memberID, memberName, k_EPersonaStateOnline, convertUserIdToIp(memberID)};
 
         list.push_back(user);
+        lobbyMemberList = list;
     }
 }
 
 bool Steam::IsUserInLobby(CSteamID lobbyID, CSteamID userID)
 {
-    vector<steamUser> lobbyMembers = ListLobbyMembers(lobbyID);
+    updateListLobbyMembers(lobbyID);
+    vector<steamUser> lobbyMembers = ListLobbyMembers();
     for (int i = 0; i < lobbyMembers.size(); ++i) {
         if (lobbyMembers[i].SteamID == userID) {
             return true;
@@ -176,6 +182,9 @@ void Steam::ListenForData(void(*callback)(BYTE*, DWORD))
     while (!END) {
         // Check if there are packets available
         while (SteamNetworking()->IsP2PPacketAvailable(&messageSize)) {
+
+            // Record start time
+
             char* buffer = new char[messageSize];  // Allocate memory for the message
             uint32 bytesRead;
             CSteamID sender;
@@ -187,8 +196,9 @@ void Steam::ListenForData(void(*callback)(BYTE*, DWORD))
             }
 
             delete[] buffer;  // Clean up allocated memory
+
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(2));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 }
 
@@ -218,7 +228,9 @@ string Steam::convertUserIdToIp(CSteamID user)
     string ip = "10";
     for (int i = idtext.size() - 5; i < idtext.size(); i += 2) {
         ip += '.';
-        ip += idtext[i - 1];
+        if (idtext[i - 1] != '0') {
+            ip += idtext[i - 1];
+        }
         ip += idtext[i];
     }
     return ip;
