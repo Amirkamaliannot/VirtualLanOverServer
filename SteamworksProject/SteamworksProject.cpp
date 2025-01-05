@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <steam/isteamnetworkingsockets.h>
+#include <steam/isteamnetworkingmessages.h>
 #include <steam/steam_api.h>
 #include <thread>
 #include <chrono>
@@ -45,6 +46,11 @@ void callbackLiteningToSteam(BYTE* packet, DWORD size) {
     wintunManager.sendPacket(packet, size);
 
 };
+
+
+MySteamApp app;
+dataTransfer dt;
+
 
 
 int main() {
@@ -195,29 +201,95 @@ int main() {
 
         if (a == 12) {
 
+            
+            //if (!pNetworkingMessages) {
+            //    // Handle error: ISteamNetworkingMessages interface not available
+            //    std::cout << "some error \n";
+            //}
+
+            //std::cout << "Enter a Steam ID (64-bit integer): ";
+            //uint64_t steamID64;
+            //std::cin >> steamID64;
+            //CSteamID peerId(steamID64);
+
+            //const char* message = "Hello, Steam user!";
+            //uint32 messageSize = static_cast<uint32>(strlen(message) + 1);
+
+            //SteamNetworkingIdentity identityRemote;
+            //identityRemote.SetSteamID64(steamID64);
+
+            //EResult result = pNetworkingMessages->SendMessageToUser(
+            //    identityRemote,
+            //    message,
+            //    messageSize,
+            //    k_nSteamNetworkingSend_Reliable, // Send flags
+            //    0 // Channel number
+            //);
+
+            //if (result != k_EResultOK) {
+            //    // Handle error: message sending failed
+            //    std::cout << "\nerror over sending!\n";
+            //}
+            //else {
+            //    std::cout << "\nsent!\n";
+            //}
+
+        }
+        if (a == 13) {
+
+            while (true) {
+                SteamAPI_RunCallbacks();
+                dt.ProcessIncomingMessages();
+                int r;
+                // Add a delay to prevent busy-waiting
+                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                std::cout << "...\n";
+                if (app.done) {
+                    dt.done = false;
+                    break;
+                }
+            }
+        
+        }
+
+        if (a == 14) {
+
+
+
             std::cout << "Enter a Steam ID (64-bit integer): ";
             uint64_t steamID64;
             std::cin >> steamID64;
-            CSteamID peerId(steamID64);
+            CSteamID incomingUser(steamID64);
 
-            SteamP2PConnection connection;
+            const char* message = "Hello, how are you?";
+            SteamNetworkingIdentity remoteIdentity;
+            remoteIdentity.SetSteamID(steamID64);  // steamID64 is the recipient's Steam ID
 
-            if (connection.Connect(peerId)) {
-                // ارسال داده
-                const char* message = "Hello";
-                connection.SendData(message, strlen(message) + 1);
+            EResult result = dt.m_networkingMessages->SendMessageToUser(
+                remoteIdentity,                         // who to send to
+                message,                                // the message data
+                strlen(message),                        // length of message
+                k_nSteamNetworkingSend_Reliable,       // send reliably
+                0                                       // default channel
+            );
 
-                // دریافت داده
-                std::vector<char> receivedData;
-                if (connection.ReceiveData(receivedData)) {
-                    // پردازش داده دریافتی
-                    for (int i = 0; i < receivedData.size(); i++) {
-                        std::cout << receivedData[i];
-                    }
-                    std::cout << "\n";
-                }
-            }
+
+            
+
+        }        
+        if (a == 15) {
+
+
+
+            std::cout << "Enter a Steam ID (64-bit integer): ";
+            uint64_t steamID64;
+            std::cin >> steamID64;
+            CSteamID incomingUser(steamID64);
+
+            
+
         }
+            
         if (a == 0) {
             break;
         }
