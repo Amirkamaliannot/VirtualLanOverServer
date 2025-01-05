@@ -21,6 +21,8 @@
 #include <iphlpapi.h>
 #include <unordered_map>
 #include "WintunManager.h"
+
+
 #pragma comment(lib, "iphlpapi.lib")
 #pragma comment(lib, "ws2_32.lib")
 
@@ -36,6 +38,7 @@ void callbackLitentToInterface(BYTE* packet, DWORD size) {
     CSteamID steamID = steam.getUserbyIP(dst_ip);
     if (steamID != k_steamIDNil) {
 
+        std::cout << "forward!\n";
         steam.SendDataToUser(steamID, packet, size);
     }
         
@@ -43,13 +46,10 @@ void callbackLitentToInterface(BYTE* packet, DWORD size) {
 
 void callbackLiteningToSteam(BYTE* packet, DWORD size) {
 
+    std::cout << "sent to iterface\n";
     wintunManager.sendPacket(packet, size);
 
 };
-
-
-MySteamApp app;
-dataTransfer dt;
 
 
 
@@ -239,13 +239,13 @@ int main() {
 
             while (true) {
                 SteamAPI_RunCallbacks();
-                dt.ProcessIncomingMessages();
+                steam.DT->ProcessIncomingMessages(callbackLiteningToSteam);
                 int r;
                 // Add a delay to prevent busy-waiting
                 std::this_thread::sleep_for(std::chrono::milliseconds(1000));
                 std::cout << "...\n";
-                if (app.done) {
-                    dt.done = false;
+                if (steam.DT->done) {
+                    steam.DT->done = false;
                     break;
                 }
             }
@@ -254,18 +254,14 @@ int main() {
 
         if (a == 14) {
 
-
-
             std::cout << "Enter a Steam ID (64-bit integer): ";
             uint64_t steamID64;
             std::cin >> steamID64;
             CSteamID incomingUser(steamID64);
-
             const char* message = "Hello, how are you?";
             SteamNetworkingIdentity remoteIdentity;
             remoteIdentity.SetSteamID(steamID64);  // steamID64 is the recipient's Steam ID
-
-            EResult result = dt.m_networkingMessages->SendMessageToUser(
+            EResult result = steam.DT->m_networkingMessages->SendMessageToUser(
                 remoteIdentity,                         // who to send to
                 message,                                // the message data
                 strlen(message),                        // length of message

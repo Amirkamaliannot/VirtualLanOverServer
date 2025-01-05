@@ -166,46 +166,53 @@ void Steam::SearchLobbies()
 
 bool Steam::SendDataToUser(CSteamID targetUser, const BYTE* data, uint32 dataSize)
 {
+    return DT->SendMessageW(targetUser, data, dataSize);
     // Send the data
-    bool success = SteamNetworking()->SendP2PPacket(
-        targetUser,          // Target user's SteamID
-        data,                // Pointer to the data buffer
-        dataSize,            // Size of the data buffer
-        k_EP2PSendUnreliable,  // Reliable send type
-        0                    // Channel to use (default is 0)
-    );
+    //bool success = SteamNetworking()->SendP2PPacket(
+    //    targetUser,          // Target user's SteamID
+    //    data,                // Pointer to the data buffer
+    //    dataSize,            // Size of the data buffer
+    //    k_EP2PSendUnreliable,  // Reliable send type
+    //    0                    // Channel to use (default is 0)
+    //);
 
-    if (!success) {
-        std::cerr << "Failed to send data to user." << std::endl;
-    }
+    //if (!success) {
+    //    std::cerr << "Failed to send data to user." << std::endl;
+    //}
 
-    return success;
+    //return success;
 }
 
 void Steam::ListenForData(void(*callback)(BYTE*, DWORD))
 {
     uint32 messageSize;
+    //while (!END) {
+    //    // Check if there are packets available
+    //    while (SteamNetworking()->IsP2PPacketAvailable(&messageSize)) {
+
+    //        // Record start time
+
+    //        char* buffer = new char[messageSize];  // Allocate memory for the message
+    //        uint32 bytesRead;
+    //        CSteamID sender;
+
+    //        // Read the packet
+    //        if (SteamNetworking()->ReadP2PPacket(buffer, messageSize, &bytesRead, &sender)) {
+    //            // Process the message
+    //            callback((BYTE*)buffer, (DWORD)bytesRead);
+    //        }
+
+    //        delete[] buffer;  // Clean up allocated memory
+
+    //    }
+    //    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    //}    
     while (!END) {
         // Check if there are packets available
-        while (SteamNetworking()->IsP2PPacketAvailable(&messageSize)) {
-
-            // Record start time
-
-            char* buffer = new char[messageSize];  // Allocate memory for the message
-            uint32 bytesRead;
-            CSteamID sender;
-
-            // Read the packet
-            if (SteamNetworking()->ReadP2PPacket(buffer, messageSize, &bytesRead, &sender)) {
-                // Process the message
-                callback((BYTE*)buffer, (DWORD)bytesRead);
-            }
-
-            delete[] buffer;  // Clean up allocated memory
-
-        }
+        DT->ProcessIncomingMessages(callback);
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
+
 }
 
 void Steam::startListening(void(*callback)(BYTE*, DWORD))
