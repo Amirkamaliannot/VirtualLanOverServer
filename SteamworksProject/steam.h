@@ -70,17 +70,13 @@ public:
                 }
             }
             updateListLobbyMembers(LobbyID);
-            lobbyMemberList = ListLobbyMembers();
-            for (int i = 0; i < lobbyMemberList.size(); i++) {
-                std::cout << "ID: " << lobbyMemberList[i].SteamID.ConvertToUint64() << " | " << lobbyMemberList[i].IP << " | " << lobbyMemberList[i].Username << "\n";
-            }
-
             std::this_thread::sleep_for(std::chrono::milliseconds(10000));
         }
     };
 
     string getUsername();
     CSteamID getUserID();
+    CSteamID getLobbyID();
     string getIP();
     CSteamID getUserbyIP(string ip);
     vector<steamUser> getFriendsList();
@@ -101,9 +97,7 @@ public:
     bool isLobbyCreated() {return isLobbyCreated_m;}
     bool isSearchCreated();
     bool isJoinDone();
-
     string convertUserIdToIp(CSteamID user);
-
 
 private:
     CSteamID userID;
@@ -112,6 +106,7 @@ private:
     CCallResult<Steam, LobbyCreated_t> m_LobbyCreated;
     CCallResult<Steam, LobbyMatchList_t> m_CallbackLobbyMatchList;
     CCallResult<Steam, LobbyEnter_t> m_LobbyEnteredCallback;
+
     bool isLobbyCreated_m = false;
     bool isSearchDone_m= false;
     bool isJoinDone_m= false;
@@ -120,4 +115,8 @@ private:
     void OnLobbyCreated(LobbyCreated_t* pCallback, bool bIOFailure);
     void OnLobbyMatchList(LobbyMatchList_t* pLobbyMatchList, bool bIOFailure);
     void OnLobbyEnter(LobbyEnter_t* pCallback, bool bIOFailure);
+
+
+
+    
 };

@@ -1,6 +1,7 @@
-// SteamworksProject.cpp : This file contains the 'main' function. Program execution begins and ends there.
+﻿// SteamworksProject.cpp : This file contains the 'main' function. Program execution begins and ends there.
 
 #include <iostream>
+#include <steam/isteamnetworkingsockets.h>
 #include <steam/steam_api.h>
 #include <thread>
 #include <chrono>
@@ -8,6 +9,7 @@
 #include <winsock2.h> 
 #include <windows.h>
 #include "steam.h"
+#include "SteamP2PConnection.h"
 #include "winperf.h"
 //#include "wincap.h"
 #include <thread>
@@ -16,6 +18,7 @@
 #include "wintun.h"
 #include <codecvt>
 #include <iphlpapi.h>
+#include <unordered_map>
 #include "WintunManager.h"
 #pragma comment(lib, "iphlpapi.lib")
 #pragma comment(lib, "ws2_32.lib")
@@ -32,7 +35,6 @@ void callbackLitentToInterface(BYTE* packet, DWORD size) {
     CSteamID steamID = steam.getUserbyIP(dst_ip);
     if (steamID != k_steamIDNil) {
 
-        //std::cout << "hi\n";
         steam.SendDataToUser(steamID, packet, size);
     }
         
@@ -42,9 +44,7 @@ void callbackLiteningToSteam(BYTE* packet, DWORD size) {
 
     wintunManager.sendPacket(packet, size);
 
-}
-
-
+};
 
 
 int main() {
@@ -168,12 +168,9 @@ int main() {
 
         }        
         if (a == 9) {
-            std::cout << "Enter a Steam ID (64-bit integer): ";
-            uint64_t steamID64;
-            std::cin >> steamID64;
-            CSteamID steamID(steamID64); 
-
+            
             std::vector<steamUser> list = steam.ListLobbyMembers();
+            std::cout << "LobbyID:" << steam.getLobbyID().ConvertToUint64()<< "\n";
             for (int i = 0; i < list.size(); i++) {
                 std::cout << "ID:" << list[i].SteamID.ConvertToUint64() << " | " << list[i].Username << " | " << list[i].IP << "\n";
             }
@@ -197,14 +194,30 @@ int main() {
         }
 
         if (a == 12) {
+
             std::cout << "Enter a Steam ID (64-bit integer): ";
             uint64_t steamID64;
             std::cin >> steamID64;
-            CSteamID steamID(steamID64);
-            cout <<steam.convertUserIdToIp(steamID) << "\n";
+            CSteamID peerId(steamID64);
 
+            SteamP2PConnection connection;
+
+            if (connection.Connect(peerId)) {
+                // ارسال داده
+                const char* message = "Hello";
+                connection.SendData(message, strlen(message) + 1);
+
+                // دریافت داده
+                std::vector<char> receivedData;
+                if (connection.ReceiveData(receivedData)) {
+                    // پردازش داده دریافتی
+                    for (int i = 0; i < receivedData.size(); i++) {
+                        std::cout << receivedData[i];
+                    }
+                    std::cout << "\n";
+                }
+            }
         }
-
         if (a == 0) {
             break;
         }

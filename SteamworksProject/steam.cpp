@@ -12,6 +12,11 @@ CSteamID Steam::getUserID()
     return userID;
 }
 
+CSteamID Steam::getLobbyID()
+{
+    return LobbyID;
+}
+
 string Steam::getIP()
 {
     return convertUserIdToIp(userID);
@@ -96,6 +101,7 @@ void Steam::updateListLobbyMembers(CSteamID lobbyID)
 
     if (!lobbyID.IsValid()) {
         std::cout << "Invalid lobby ID!" << std::endl;
+        lobbyMemberList = list;
         return;
     }
 
@@ -165,7 +171,7 @@ bool Steam::SendDataToUser(CSteamID targetUser, const BYTE* data, uint32 dataSiz
         targetUser,          // Target user's SteamID
         data,                // Pointer to the data buffer
         dataSize,            // Size of the data buffer
-        k_EP2PSendReliable,  // Reliable send type
+        k_EP2PSendUnreliable,  // Reliable send type
         0                    // Channel to use (default is 0)
     );
 
@@ -260,18 +266,20 @@ void Steam::OnLobbyMatchList(LobbyMatchList_t* pLobbyMatchList, bool bIOFailure)
         return;
     }
 
-    std::cout << "Found " << pLobbyMatchList->m_nLobbiesMatching << " lobbies." << std::endl;
+    if (!pLobbyMatchList->m_nLobbiesMatching) {
+        std::cout << "Found " << pLobbyMatchList->m_nLobbiesMatching << " lobbies." << std::endl;
+    }
 
     // Iterate through lobbies and print their IDs
     for (int i = 0; i < pLobbyMatchList->m_nLobbiesMatching; ++i) {
         CSteamID lobbyID = SteamMatchmaking()->GetLobbyByIndex(i);
-        std::cout << "Lobby ID: " << lobbyID.ConvertToUint64() << std::endl;
+        //std::cout << "Lobby ID: " << lobbyID.ConvertToUint64() << std::endl;
 
         // Example: Automatically join the first lobby
         if (i == 0) {
             SteamMatchmaking()->JoinLobby(lobbyID);
             LobbyID = SteamMatchmaking()->GetLobbyByIndex(0);
-            std::cout << "Joining lobby: " << lobbyID.ConvertToUint64() << std::endl;
+            //std::cout << "Joining lobby: " << lobbyID.ConvertToUint64() << std::endl;
         }
     }
     isSearchDone_m = true;

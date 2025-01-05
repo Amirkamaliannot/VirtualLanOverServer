@@ -137,6 +137,7 @@ ws2_32.lib;</AdditionalDependencies>
   <ItemGroup>
     <ClCompile Include="Packet.cpp" />
     <ClCompile Include="steam.cpp" />
+    <ClCompile Include="SteamP2PConnection.cpp" />
     <ClCompile Include="SteamworksProject.cpp" />
     <ClCompile Include="wincap.cpp" />
     <ClCompile Include="WintunManager.cpp" />
@@ -144,6 +145,7 @@ ws2_32.lib;</AdditionalDependencies>
   <ItemGroup>
     <ClInclude Include="Packet.h" />
     <ClInclude Include="steam.h" />
+    <ClInclude Include="SteamP2PConnection.h" />
     <ClInclude Include="wincap.h" />
     <ClInclude Include="wintun.h" />
     <ClInclude Include="WintunManager.h" />
