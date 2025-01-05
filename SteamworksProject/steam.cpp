@@ -1,5 +1,37 @@
 #include "steam.h"
 
+void Steam::steamLoop()
+{
+    std::thread steamThread(&Steam::runtime, this);
+    steamThread.detach(); // Detach the thread if you don't want to join it later
+};
+
+void Steam::callbackLoop()
+{
+    while (!END) {
+        SteamAPI_RunCallbacks();
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+}
+void Steam::runtime()
+{
+    while (!END) {
+        SearchLobbies();
+        while (!isSearchCreated()) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        }
+        if (LobbyID == k_steamIDNil) {
+            CreateLobby(4);
+            while (!isLobbyCreated()) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            }
+        }
+        updateListLobbyMembers(LobbyID);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+    }
+}
+;
+
 string Steam::getUsername()
 {
     const char* userName = SteamFriends()->GetPersonaName();
@@ -167,46 +199,10 @@ void Steam::SearchLobbies()
 bool Steam::SendDataToUser(CSteamID targetUser, const BYTE* data, uint32 dataSize)
 {
     return DT->SendMessageW(targetUser, data, dataSize);
-    // Send the data
-    //bool success = SteamNetworking()->SendP2PPacket(
-    //    targetUser,          // Target user's SteamID
-    //    data,                // Pointer to the data buffer
-    //    dataSize,            // Size of the data buffer
-    //    k_EP2PSendUnreliable,  // Reliable send type
-    //    0                    // Channel to use (default is 0)
-    //);
-
-    //if (!success) {
-    //    std::cerr << "Failed to send data to user." << std::endl;
-    //}
-
-    //return success;
 }
 
 void Steam::ListenForData(void(*callback)(BYTE*, DWORD))
 {
-    uint32 messageSize;
-    //while (!END) {
-    //    // Check if there are packets available
-    //    while (SteamNetworking()->IsP2PPacketAvailable(&messageSize)) {
-
-    //        // Record start time
-
-    //        char* buffer = new char[messageSize];  // Allocate memory for the message
-    //        uint32 bytesRead;
-    //        CSteamID sender;
-
-    //        // Read the packet
-    //        if (SteamNetworking()->ReadP2PPacket(buffer, messageSize, &bytesRead, &sender)) {
-    //            // Process the message
-    //            callback((BYTE*)buffer, (DWORD)bytesRead);
-    //        }
-
-    //        delete[] buffer;  // Clean up allocated memory
-
-    //    }
-    //    std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    //}    
     while (!END) {
         // Check if there are packets available
         DT->ProcessIncomingMessages(callback);
@@ -308,4 +304,49 @@ void Steam::OnLobbyEnter(LobbyEnter_t* pCallback, bool bIOFailure)
             << pCallback->m_EChatRoomEnterResponse << std::endl;
     }
     isJoinDone_m = true;
+}
+
+void Steam::OnLobbyChatUpdate(LobbyChatUpdate_t* pCallback)
+{
+
+    bool userFinded = false;
+    CSteamID lobbyID = CSteamID(pCallback->m_ulSteamIDLobby);
+    CSteamID userChangedID = CSteamID(pCallback->m_ulSteamIDUserChanged);
+    CSteamID makingChangeID = CSteamID(pCallback->m_ulSteamIDMakingChange);
+    uint32 changeFlags = pCallback->m_rgfChatMemberStateChange;
+
+    //User joined the lobby;
+    if (changeFlags & k_EChatMemberStateChangeEntered) {
+        for (int i = 0; i < lobbyMemberList.size(); i++) {
+            if (lobbyMemberList[i].SteamID == userChangedID) {
+                userFinded = true;
+                break;
+            }
+        }
+        if (!userFinded) {
+            steamUser user{
+                userChangedID,
+                SteamFriends()->GetFriendPersonaName(userChangedID),
+                k_EPersonaStateOnline,
+                convertUserIdToIp(userChangedID)
+            };
+            lobbyMemberList.push_back(user);
+        }
+        userFinded = false;
+    }
+
+    //"User left the lobby  or  User disconnected from the lobby  or  User was kicked from the lobby  or  User was banned from the lobby
+    if (
+        changeFlags & k_EChatMemberStateChangeLeft ||
+        changeFlags & k_EChatMemberStateChangeDisconnected ||
+        changeFlags & k_EChatMemberStateChangeKicked ||
+        changeFlags & k_EChatMemberStateChangeBanned
+        )
+    {
+        for (int i = 0; i < lobbyMemberList.size(); i++) {
+            if (lobbyMemberList[i].SteamID == userChangedID) {
+                lobbyMemberList.erase(lobbyMemberList.begin() + i);
+            }
+        }
+    }
 }

@@ -1,5 +1,5 @@
 #include "WintunManager.h"
-
+#include <ws2tcpip.h>
 
 bool WintunManager::Initialize()
 {

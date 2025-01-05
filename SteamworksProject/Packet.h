@@ -3,8 +3,11 @@
 #include <windows.h>
 #include <vector>
 #include <iomanip>
-#include <pcap.h>
 #include <iostream>
+#include <winsock2.h>
+#include <ws2tcpip.h>
+
+#define INET_ADDRSTRLEN 16
 
 struct nt_header {
     uint16_t src_port;   // Source port

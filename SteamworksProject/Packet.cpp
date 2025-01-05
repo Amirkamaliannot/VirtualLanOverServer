@@ -1,10 +1,4 @@
 #include "Packet.h"
-#include <winsock2.h>  // For inet_ntoa
-#include <windows.h>
-#include <vector>
-#include <iomanip>
-#include <pcap.h>
-#include <iostream>
 
 void Packet::create(bool ETHERNET_FRAME){
 

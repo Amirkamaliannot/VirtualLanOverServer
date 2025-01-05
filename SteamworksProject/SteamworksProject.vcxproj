@@ -135,20 +135,23 @@ ws2_32.lib;</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="functions.cpp" />
     <ClCompile Include="Packet.cpp" />
     <ClCompile Include="steam.cpp" />
     <ClCompile Include="SteamP2PConnection.cpp" />
     <ClCompile Include="SteamworksProject.cpp" />
-    <ClCompile Include="wincap.cpp" />
     <ClCompile Include="WintunManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="functions.h" />
     <ClInclude Include="Packet.h" />
     <ClInclude Include="steam.h" />
     <ClInclude Include="SteamP2PConnection.h" />
-    <ClInclude Include="wincap.h" />
     <ClInclude Include="wintun.h" />
     <ClInclude Include="WintunManager.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="SteamworksProject.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
