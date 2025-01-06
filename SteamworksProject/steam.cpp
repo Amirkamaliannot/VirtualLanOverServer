@@ -27,7 +27,7 @@ void Steam::runtime()
             }
         }
         updateListLobbyMembers(LobbyID);
-        std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
     }
 }
 ;
@@ -79,7 +79,7 @@ vector<steamUser> Steam::getFriendsList()
         // Get the friend's current status
         EPersonaState friendState = SteamFriends()->GetFriendPersonaState(friendSteamID);
 
-        steamUser friends{ friendSteamID, friendName, friendState };
+        steamUser friends{ friendSteamID, friendName, friendState, "0", getPing(friendSteamID)};
         friendsList.push_back(friends);
     };
     return friendsList;
@@ -142,7 +142,7 @@ void Steam::updateListLobbyMembers(CSteamID lobbyID)
     for (int i = 0; i < memberCount; ++i) {
         CSteamID memberID = SteamMatchmaking()->GetLobbyMemberByIndex(lobbyID, i);
         const char* memberName = SteamFriends()->GetFriendPersonaName(memberID);
-        steamUser user{ memberID, memberName, k_EPersonaStateOnline, convertUserIdToIp(memberID)};
+        steamUser user{ memberID, memberName, k_EPersonaStateOnline, convertUserIdToIp(memberID), getPing(memberID) };
 
         list.push_back(user);
         lobbyMemberList = list;
@@ -298,6 +298,8 @@ void Steam::OnLobbyEnter(LobbyEnter_t* pCallback, bool bIOFailure)
     if (pCallback->m_EChatRoomEnterResponse == k_EChatRoomEnterResponseSuccess) {
         std::cout << "Lobby exists and joined successfully. Lobby ID: "
             << pCallback->m_ulSteamIDLobby << std::endl;
+
+        updateListLobbyMembers(pCallback->m_ulSteamIDLobby);
     }
     else {
         std::cout << "Lobby does not exist or cannot be joined. Error code: "
@@ -324,13 +326,17 @@ void Steam::OnLobbyChatUpdate(LobbyChatUpdate_t* pCallback)
             }
         }
         if (!userFinded) {
+
+            const unsigned char data[] = { 'h', 'e', 'l', 'l', 'o' };
             steamUser user{
                 userChangedID,
                 SteamFriends()->GetFriendPersonaName(userChangedID),
                 k_EPersonaStateOnline,
-                convertUserIdToIp(userChangedID)
+                convertUserIdToIp(userChangedID),
+                getPing(userChangedID)
             };
             lobbyMemberList.push_back(user);
+            SendDataToUser(userChangedID, data, sizeof(data));
         }
         userFinded = false;
     }

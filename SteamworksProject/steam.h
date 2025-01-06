@@ -17,7 +17,7 @@ struct steamUser
     string Username;
     EPersonaState State;
     string IP;
-    bool connection = false;
+    int ping = 0;
 };
 
 
@@ -41,6 +41,7 @@ public:
 
     ~Steam() {
         END = true;
+        delete(DT);
         SteamAPI_Shutdown();
     }
 
@@ -71,6 +72,51 @@ public:
     bool isSearchCreated();
     bool isJoinDone();
     string convertUserIdToIp(CSteamID user);
+
+    int getPing(CSteamID user) {
+
+        if (user == getUserID()) {
+            return 0;
+        }
+
+        // First, you need the remote peer's identity
+        SteamNetworkingIdentity remoteIdentity;
+        remoteIdentity.SetSteamID(user);
+        // Set up the remote identity - could be from accepting a connection, etc.
+
+        // Create structs to hold the connection info and status
+        SteamNetConnectionInfo_t connectionInfo;
+        SteamNetConnectionRealTimeStatus_t realTimeStatus;
+
+
+        // Get the connection info
+        ESteamNetworkingConnectionState state = DT->m_networkingMessages->GetSessionConnectionInfo(
+            remoteIdentity,
+            &connectionInfo,    // Can be nullptr if you don't need this info
+            &realTimeStatus    // Can be nullptr if you don't need this info
+        );
+
+        // Check the returned state
+        switch (state) {
+        case k_ESteamNetworkingConnectionState_None:
+            // No connection exists
+            return 0;
+            break;
+        case k_ESteamNetworkingConnectionState_Connected:
+            // Connection is active and ready
+            // You can now use connectionInfo and realTimeStatus
+            return realTimeStatus.m_nPing;
+            break;
+        case k_ESteamNetworkingConnectionState_Connecting:
+            // Connection is being established
+            return 999;
+            break;
+            // Handle other states as needed
+        }
+
+    }
+
+
 
 private:
     CSteamID userID;

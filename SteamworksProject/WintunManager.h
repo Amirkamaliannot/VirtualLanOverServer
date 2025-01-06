@@ -9,6 +9,11 @@
 #include <iphlpapi.h>
 #include "WintunManager.h"
 #include "Packet.h"
+
+#include <netlistmgr.h>
+#include <iostream>
+#include <atlbase.h> // For CComPtr
+
 #pragma comment(lib, "iphlpapi.lib")
 #pragma comment(lib, "ws2_32.lib")
 
@@ -73,4 +78,5 @@ public:
     DWORD GetAdapterIndex();
     void startListening(void (*callback)(BYTE*, DWORD));
     void Listening(void (*callback)(BYTE*, DWORD));
+
 };
