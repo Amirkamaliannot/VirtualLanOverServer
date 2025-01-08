@@ -17,7 +17,6 @@ struct steamUser
     string Username;
     EPersonaState State;
     string IP;
-    int ping = 0;
 };
 
 
@@ -32,11 +31,23 @@ public:
             std::cerr << "Failed to initialize Steam API. Make sure Steam is running.\n";
         }
 
-        userID = SteamUser()->GetSteamID();
         DT = new DataTransfer();
-        std::thread callbackThread(&Steam::callbackLoop, this);
-        callbackThread.detach();
-        steamLoop();
+        while (!END) {
+
+            if (IsSteamConnected()) {
+
+                userID = SteamUser()->GetSteamID();
+                std::thread callbackThread(&Steam::callbackLoop, this);
+                callbackThread.detach();
+                steamLoop();
+                break;
+            }
+            else {
+                std::cout << "not connected\n";
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        }
+
     }
 
     ~Steam() {
@@ -72,6 +83,13 @@ public:
     bool isSearchCreated();
     bool isJoinDone();
     string convertUserIdToIp(CSteamID user);
+
+    bool IsSteamConnected() {
+        if (!SteamAPI_IsSteamRunning() || !SteamUser()) {
+            return false;
+        }
+        return SteamUser()->BLoggedOn();  // This is the correct way to check connection
+    }
 
     int getPing(CSteamID user) {
 
@@ -132,6 +150,7 @@ private:
     bool isSearchDone_m= false;
     bool isJoinDone_m= false;
     bool END = false;
+    bool lastConnectionStatus = 0;
 
     //callbacks
     void OnLobbyCreated(LobbyCreated_t* pCallback, bool bIOFailure);

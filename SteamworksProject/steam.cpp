@@ -9,28 +9,55 @@ void Steam::steamLoop()
 void Steam::callbackLoop()
 {
     while (!END) {
-        SteamAPI_RunCallbacks();
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        if (lastConnectionStatus) {
+            SteamAPI_RunCallbacks();
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(3));
     }
 }
 void Steam::runtime()
 {
     while (!END) {
-        SearchLobbies();
-        while (!isSearchCreated()) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+        if (!IsSteamConnected()) {
+
+            lobbyMemberList.clear();
+            LobbyID = k_steamIDNil;
+            lastConnectionStatus = false;
+            cout << "dissconnected\n";
+
         }
-        if (LobbyID == k_steamIDNil) {
-            CreateLobby(4);
-            while (!isLobbyCreated()) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        else if (lastConnectionStatus && IsSteamConnected()) {
+
+            //nothing to do
+        
+        
+        }
+        else if (!lastConnectionStatus && IsSteamConnected()) {
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+            lastConnectionStatus = true;
+
+            SearchLobbies();
+            while (!isSearchCreated()) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
             }
+            if (LobbyID == k_steamIDNil) {
+                CreateLobby(6);
+                while (!isLobbyCreated()) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                }
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(250));
+            updateListLobbyMembers(LobbyID);
+        
         }
-        updateListLobbyMembers(LobbyID);
-        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
     }
-}
-;
+};
 
 string Steam::getUsername()
 {
@@ -79,7 +106,7 @@ vector<steamUser> Steam::getFriendsList()
         // Get the friend's current status
         EPersonaState friendState = SteamFriends()->GetFriendPersonaState(friendSteamID);
 
-        steamUser friends{ friendSteamID, friendName, friendState, "0", getPing(friendSteamID)};
+        steamUser friends{ friendSteamID, friendName, friendState, "0"};
         friendsList.push_back(friends);
     };
     return friendsList;
@@ -142,7 +169,7 @@ void Steam::updateListLobbyMembers(CSteamID lobbyID)
     for (int i = 0; i < memberCount; ++i) {
         CSteamID memberID = SteamMatchmaking()->GetLobbyMemberByIndex(lobbyID, i);
         const char* memberName = SteamFriends()->GetFriendPersonaName(memberID);
-        steamUser user{ memberID, memberName, k_EPersonaStateOnline, convertUserIdToIp(memberID), getPing(memberID) };
+        steamUser user{ memberID, memberName, k_EPersonaStateOnline, convertUserIdToIp(memberID)};
 
         list.push_back(user);
         lobbyMemberList = list;
@@ -198,15 +225,19 @@ void Steam::SearchLobbies()
 
 bool Steam::SendDataToUser(CSteamID targetUser, const BYTE* data, uint32 dataSize)
 {
-    return DT->SendMessageW(targetUser, data, dataSize);
+    if (IsSteamConnected()) {
+        return DT->SendMessageW(targetUser, data, dataSize);
+    }
 }
 
 void Steam::ListenForData(void(*callback)(BYTE*, DWORD))
 {
     while (!END) {
-        // Check if there are packets available
-        DT->ProcessIncomingMessages(callback);
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        if (IsSteamConnected()) {
+            // Check if there are packets available
+            DT->ProcessIncomingMessages(callback);
+            std::this_thread::sleep_for(std::chrono::milliseconds(2));
+        }
     }
 
 }
@@ -276,14 +307,13 @@ void Steam::OnLobbyMatchList(LobbyMatchList_t* pLobbyMatchList, bool bIOFailure)
     // Iterate through lobbies and print their IDs
     for (int i = 0; i < pLobbyMatchList->m_nLobbiesMatching; ++i) {
         CSteamID lobbyID = SteamMatchmaking()->GetLobbyByIndex(i);
-        //std::cout << "Lobby ID: " << lobbyID.ConvertToUint64() << std::endl;
 
-        // Example: Automatically join the first lobby
+        //Automatically join the first lobby
         if (i == 0) {
             SteamMatchmaking()->JoinLobby(lobbyID);
             LobbyID = SteamMatchmaking()->GetLobbyByIndex(0);
-            //std::cout << "Joining lobby: " << lobbyID.ConvertToUint64() << std::endl;
         }
+        break;
     }
     isSearchDone_m = true;
 }
@@ -296,14 +326,11 @@ void Steam::OnLobbyEnter(LobbyEnter_t* pCallback, bool bIOFailure)
     }
 
     if (pCallback->m_EChatRoomEnterResponse == k_EChatRoomEnterResponseSuccess) {
-        std::cout << "Lobby exists and joined successfully. Lobby ID: "
-            << pCallback->m_ulSteamIDLobby << std::endl;
-
-        updateListLobbyMembers(pCallback->m_ulSteamIDLobby);
+        std::cout << "Lobby exists and joined successfully. Lobby ID: " << pCallback->m_ulSteamIDLobby << std::endl;
+        LobbyID = pCallback->m_ulSteamIDLobby;
     }
     else {
-        std::cout << "Lobby does not exist or cannot be joined. Error code: "
-            << pCallback->m_EChatRoomEnterResponse << std::endl;
+        std::cout << "Lobby does not exist or cannot be joined. Error code: "<< pCallback->m_EChatRoomEnterResponse << std::endl;
     }
     isJoinDone_m = true;
 }
@@ -332,8 +359,7 @@ void Steam::OnLobbyChatUpdate(LobbyChatUpdate_t* pCallback)
                 userChangedID,
                 SteamFriends()->GetFriendPersonaName(userChangedID),
                 k_EPersonaStateOnline,
-                convertUserIdToIp(userChangedID),
-                getPing(userChangedID)
+                convertUserIdToIp(userChangedID)
             };
             lobbyMemberList.push_back(user);
             SendDataToUser(userChangedID, data, sizeof(data));

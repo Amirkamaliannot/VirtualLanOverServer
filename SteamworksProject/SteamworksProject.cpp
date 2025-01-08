@@ -74,7 +74,7 @@ int main() {
                 cout << left << setw(20) << list[i].SteamID.ConvertToUint64()
                     << setw(20) << list[i].Username
                     << setw(20) << list[i].IP
-                    << setw(5) << list[i].ping << "ms\n";
+                    << setw(4) << steam.getPing(list[i].SteamID) << "ms\n";
             }
         }
         if (a == 7) {
@@ -84,6 +84,16 @@ int main() {
             std::cin >> steamID64;
             CSteamID steamID(steamID64);
             steam.getPing(steamID);
+        }
+
+        if (a == 8) {
+            if (steam.IsSteamConnected()) {
+                std::cout << "Connected";
+            }
+            else {
+                std::cout << "not Connected";
+            }
+            
         }
             
         if (a == 0) {
