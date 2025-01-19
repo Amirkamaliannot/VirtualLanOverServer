@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{caf7173a-6f3e-4f83-9431-a539777a69b0}</ProjectGuid>
+    <ProjectGuid>{CC7432E0-92F7-474A-87AC-A08AB4CB3182}</ProjectGuid>
     <RootNamespace>SteamworksProject</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -139,7 +139,7 @@ ws2_32.lib;</AdditionalDependencies>
     <ClCompile Include="Packet.cpp" />
     <ClCompile Include="steam.cpp" />
     <ClCompile Include="SteamP2PConnection.cpp" />
-    <ClCompile Include="SteamworksProject.cpp" />
+    <ClCompile Include="sourse.cpp" />
     <ClCompile Include="WintunManager.cpp" />
   </ItemGroup>
   <ItemGroup>

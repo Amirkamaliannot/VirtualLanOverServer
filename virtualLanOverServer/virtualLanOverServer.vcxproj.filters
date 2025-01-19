@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="SteamworksProject.cpp">
+    <ClCompile Include="sourse.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Packet.cpp">
