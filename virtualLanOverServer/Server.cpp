@@ -80,4 +80,11 @@ void Server::sendData(std::string packet)
         std::cerr << "Send failed: " << WSAGetLastError() << std::endl;
     }
 }
+void Server::sendData(BYTE* data, DWORD dataSize)
+{
+    // Send binary data to the client
+    if (send(clientSocket, reinterpret_cast<const char*>(data), dataSize, 0) == SOCKET_ERROR) {
+        std::cerr << "Send failed: " << WSAGetLastError() << std::endl;
+    }
+}
 

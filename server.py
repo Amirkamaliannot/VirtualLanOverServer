@@ -1,15 +1,30 @@
 import socket
 import threading
-
-# class Client:
-#     def __init__(ip, socket):
-#         self.ip = ip
-#         self.socket = socket
-
-
+import struct
 
 
 lobby_list = {}
+
+def forwardPackets(packet):
+    ip = get_destination_ip(packet)
+
+    print(ip)
+    if(ip and ip in lobby_list):
+        lobby_list[ip].send(packet)
+        print("forward")
+
+
+def get_destination_ip(raw_pkt):
+
+    if not raw_pkt:
+        raise ValueError("Packet data cannot be null.")
+
+    dst_ip_bytes = raw_pkt[16:20]  # Bytes 16-19 represent the destination IP address
+    dst_ip = socket.inet_ntoa(dst_ip_bytes)  # Convert to human-readable format
+    if(is_valid_ipv4(dst_ip)):
+        return dst_ip
+    else:
+        return False
 
 
 def is_valid_ipv4(ip: str) -> bool:
@@ -46,22 +61,33 @@ def handle_command(command, socket):
     
     if(parsed[1] == "getList"):
 
-        if(is_valid_ipv4(parsed[2]) and parsed[2] in lobby_list):
+        if(is_valid_ipv4(parsed[2]) and parsed[2] in lobby_list  and isClientJoin(socket)):
             a = ""
             for i in lobby_list:
                 a+= i + "\n"
             socket.send(a.encode())
+        
+        else:socket.send(b"not auth\n")
 
     if(parsed[1] == "leave"):
 
-        if(is_valid_ipv4(parsed[2]) and parsed[2] in lobby_list):
+        if(is_valid_ipv4(parsed[2]) and parsed[2] in lobby_list and isClientJoin(socket)):
 
             del lobby_list[parsed[2]]
-            socket.send(b"1")
+            socket.send(b"1\n")
+        
+        else:socket.send(b"not auth\n")
 
 
 
+def authenticator(client_socket):
+    pass
 
+def isClientJoin(socket_to_check):
+    if any(sock is socket_to_check for sock in lobby_list.values()):
+        return True
+    else:
+        return False
 
 
 # Function to handle client connections
@@ -74,16 +100,28 @@ def handle_client(client_socket, client_address):
             if not data:
                 break  # If no data is received, close the connection
 
-            if(data.decode('utf-8').startswith("command")):
+            elif(data.startswith(b"command")):
                 handle_command(data.decode('utf-8'), client_socket)
-            print(f"Received from {client_address}: {data.decode('utf-8')}")
+            elif(isClientJoin(client_socket)):
+                forwardPackets(data)
+            else:
+                client_socket.send(b"not auth\n")
+
+            # print(f"Received from {client_address}: {data.decode('utf-8')}")
 
             # Send a response back to the client
-            client_socket.send(b"Message received by server!")
+            client_socket.send(b"Message received by server!\n")
     except Exception as e:
         print(f"Error handling client {client_address}: {e}")
     finally:
         # Close the client connection
+
+        for key, value in lobby_list.items():
+            if(value is client_socket):
+                delkey = key
+                break
+        del lobby_list[delkey]
+
         client_socket.close()
         print(f"[-] Connection from {client_address} closed")
 

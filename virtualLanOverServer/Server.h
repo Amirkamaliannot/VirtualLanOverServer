@@ -37,6 +37,7 @@ public:
 
     void startListening(void (*callback)(BYTE*, DWORD));
     void sendData(std::string packet);
+    void sendData(BYTE* data, DWORD dataSize);
 
 
 };

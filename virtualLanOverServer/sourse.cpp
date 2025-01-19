@@ -12,17 +12,14 @@ using std::setw;
 
 int main() {
 
-    //std::cout << "start listening on interface\n";
-    //wintunManager.startListening(callbackLitentToInterface);
+    std::cout << "start listening on interface\n";
+    server.startListening(callbackLiteningToServer);
+    wintunManager.startListening(callbackLitentToInterface);
 
-    //std::cout << "start listening on steam\n";
-    //steam.startListening(callbackLiteningToSteam);
     std::cout << getIP();
-    Server server;
-    server.startListening(callbackLiteningToSerser);
+ 
 
-    
-    Lobby lobby(&server, getIP());
+
 
 
 
@@ -48,6 +45,13 @@ int main() {
         }        
         if (a == "3") {
             lobby.leaveLobby();
+        }        
+        if (a == "4") {
+
+            std::cout << "Enter your data :";
+            std::string str;
+            std::cin >> str;
+            lobby.sendData(str);
         }
         
         if (a == "0") {

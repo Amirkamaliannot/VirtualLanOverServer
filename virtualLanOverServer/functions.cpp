@@ -1,15 +1,23 @@
 #include "functions.h"
 #include <string> 
 
-//WintunManager wintunManager(L"AmirVPN", L"10.10.10.10", L"255.0.0.0");
+
+std::wstring systemIP = std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(getIP());
+WintunManager wintunManager(L"AmirVPN", systemIP, L"255.0.0.0");
+Server server;
+Lobby lobby(&server, getIP());
 
 void callbackLitentToInterface(BYTE* packet, DWORD size)
 {
-    Packet temp = Packet(packet, false, size);
+    if (lobby.join) {
 
+        Packet temp = Packet(packet, false, size);
+        server.sendData(packet, size);
+
+    }
 
 }
-void callbackLiteningToSerser(BYTE* packet, DWORD size)
+void callbackLiteningToServer(BYTE* packet, DWORD size)
 {
     for (int i = 0; i < size; i++) {
 
@@ -18,6 +26,7 @@ void callbackLiteningToSerser(BYTE* packet, DWORD size)
     std::cout << "\n";
     //wintunManager.sendPacket(packet, size);
 }
+
 std::string GetVolumeSerialNumber()
 {
     char volumePath[MAX_PATH] = "C:\\"; // Use the system drive

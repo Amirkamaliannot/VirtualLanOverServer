@@ -14,13 +14,16 @@
 #include <iphlpapi.h>
 #include <unordered_map>
 #include "WintunManager.h"
+#include "Server.h"
+#include "Lobby.h"
 
 extern std::wstring serverIP;
+extern Server server;
+extern Lobby lobby;
 extern WintunManager wintunManager;
 
-
 void callbackLitentToInterface(BYTE* packet, DWORD size);
-void callbackLiteningToSerser(BYTE* packet, DWORD size);
+void callbackLiteningToServer(BYTE* packet, DWORD size);
 
 
 std::string GetVolumeSerialNumber();

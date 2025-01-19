@@ -22,8 +22,11 @@ public:
 	std::vector<client> memberList;
 	std::string myip;
 
+	bool join = false;
+
 	void joinlLobby() {
 		server->sendData("command join " + myip);
+		join = true;
 	}
 
 	void getLobbyMembers() {
@@ -38,6 +41,11 @@ public:
 
 	void leaveLobby() {
 		server->sendData("command leave " + myip);
+		join = false;
+	}	
+	
+	void sendData(std::string data) {
+		server->sendData(data);
 	}
 
 
