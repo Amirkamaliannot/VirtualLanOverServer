@@ -24,12 +24,15 @@ void callbackLitentToInterface(BYTE* packet, DWORD size)
 }
 void callbackLiteningToServer(BYTE* packet, DWORD size)
 {
-    for (int i = 0; i < size; i++) {
+    if (startsWithCommand(packet, size)) {
 
-        std::cout << packet[i];
+        lobby.handleResponse(packet, size);
+        std::cout << "command arrive\n";
+
+    }else{
+        wintunManager.sendPacket(packet, size);
+        std::cout << "miror\n";
     }
-    std::cout << "\n";
-    //wintunManager.sendPacket(packet, size);
 }
 
 std::string readingIp()
@@ -77,6 +80,16 @@ std::string getIP()
         ip += std::to_string(a);
     }
     return ip;
+}
+
+bool startsWithCommand(const BYTE* data, size_t dataSize)
+{
+    const char* commandPrefix = "command";
+    size_t prefixLength = strlen(commandPrefix);
+    if (dataSize < prefixLength) {
+        return false;
+    }
+    return memcmp(data, commandPrefix, prefixLength) == 0;
 }
 
 

@@ -41,6 +41,7 @@ int main() {
         }        
         if (a == "2") {
             lobby.getLobbyMembers();
+            lobby.showMemberList();
         }        
         if (a == "3") {
             lobby.leaveLobby();

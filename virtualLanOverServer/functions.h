@@ -32,3 +32,5 @@ std::string readingIp();
 std::string GetVolumeSerialNumber();
 
 std::string getIP();
+
+bool startsWithCommand(const BYTE* data, size_t dataSize);

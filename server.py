@@ -55,28 +55,28 @@ def handle_command(command, socket):
         if(is_valid_ipv4(parsed[2]) and parsed[2] not in lobby_list):
 
             lobby_list[parsed[2]] = socket
-            socket.send(b"1")
+            socket.send(b"command join 1")
         else:
-            socket.send(b"0")
+            socket.send(b"command join 0")
     
-    if(parsed[1] == "getList"):
+    if(parsed[1] == "list"):
 
         if(is_valid_ipv4(parsed[2]) and parsed[2] in lobby_list  and isClientJoin(socket)):
-            a = ""
+            a = "command list 1 "
             for i in lobby_list:
                 a+= i + "\n"
             socket.send(a.encode())
         
-        else:socket.send(b"not auth\n")
+        else:socket.send(b"command list 0")
 
     if(parsed[1] == "leave"):
 
         if(is_valid_ipv4(parsed[2]) and parsed[2] in lobby_list and isClientJoin(socket)):
 
             del lobby_list[parsed[2]]
-            socket.send(b"1\n")
+            socket.send(b"command leave 1")
         
-        else:socket.send(b"not auth\n")
+        else:socket.send(b"command leave 0")
 
 
 
@@ -105,12 +105,8 @@ def handle_client(client_socket, client_address):
             elif(isClientJoin(client_socket)):
                 forwardPackets(data)
             else:
-                client_socket.send(b"not auth\n")
+                client_socket.send(b"command error")
 
-            # print(f"Received from {client_address}: {data.decode('utf-8')}")
-
-            # Send a response back to the client
-            client_socket.send(b"Message received by server!\n")
     except Exception as e:
         print(f"Error handling client {client_address}: {e}")
     finally:
