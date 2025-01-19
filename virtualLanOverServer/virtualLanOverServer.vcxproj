@@ -137,12 +137,14 @@ ws2_32.lib;</AdditionalDependencies>
   <ItemGroup>
     <ClCompile Include="functions.cpp" />
     <ClCompile Include="Packet.cpp" />
+    <ClCompile Include="Server.cpp" />
     <ClCompile Include="sourse.cpp" />
     <ClCompile Include="WintunManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="functions.h" />
     <ClInclude Include="Packet.h" />
+    <ClInclude Include="Server.h" />
     <ClInclude Include="wintun.h" />
     <ClInclude Include="WintunManager.h" />
   </ItemGroup>

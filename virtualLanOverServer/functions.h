@@ -21,3 +21,8 @@ extern WintunManager wintunManager;
 
 void callbackLitentToInterface(BYTE* packet, DWORD size);
 void callbackLiteningToSerser(BYTE* packet, DWORD size);
+
+
+std::string GetVolumeSerialNumber();
+
+std::string getIP();
