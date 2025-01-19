@@ -1,11 +1,16 @@
 #include "functions.h"
 #include <string> 
-
+#include <fstream> 
+#include <iostream>
+#include <string>
+#include <sstream> 
 
 std::wstring systemIP = std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(getIP());
 WintunManager wintunManager(L"AmirVPN", systemIP, L"255.0.0.0");
-Server server;
+Server server(readingIp());
 Lobby lobby(&server, getIP());
+
+
 
 void callbackLitentToInterface(BYTE* packet, DWORD size)
 {
@@ -25,6 +30,23 @@ void callbackLiteningToServer(BYTE* packet, DWORD size)
     }
     std::cout << "\n";
     //wintunManager.sendPacket(packet, size);
+}
+
+std::string readingIp()
+{
+    // Open the file
+    std::ifstream file("server.txt");
+    // Check if the file was opened successfully
+    if (!file.is_open()) {
+        std::cerr << "Failed to open the file!" << std::endl;
+    }
+    // Read the entire file into a string
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    std::string file_content = buffer.str();
+    // Close the file
+    file.close();
+    return file_content;
 }
 
 std::string GetVolumeSerialNumber()

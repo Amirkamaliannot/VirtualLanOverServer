@@ -16,8 +16,7 @@ int main() {
     server.startListening(callbackLiteningToServer);
     wintunManager.startListening(callbackLitentToInterface);
 
-    std::cout << getIP();
- 
+    std::cout << getIP() ;
 
 
 
@@ -47,13 +46,11 @@ int main() {
             lobby.leaveLobby();
         }        
         if (a == "4") {
-
             std::cout << "Enter your data :";
             std::string str;
             std::cin >> str;
             lobby.sendData(str);
         }
-        
         if (a == "0") {
             break;
         }

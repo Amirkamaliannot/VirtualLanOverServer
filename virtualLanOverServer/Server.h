@@ -12,12 +12,12 @@ class Server
 {
 public:
     SOCKET clientSocket;
-    std::string serverAddress = "127.0.0.1";
+    std::string serverAddress;
     int port = 5001;
 
     bool END = false;
 
-    Server() {
+    Server(std::string server):serverAddress(server){
         std::cout << "server starting\n";
         Initialize();
         connection();

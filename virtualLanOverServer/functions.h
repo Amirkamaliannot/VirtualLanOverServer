@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <fstream>
 #include <thread>
 #include <chrono>
 #include <iomanip>
@@ -24,6 +25,8 @@ extern WintunManager wintunManager;
 
 void callbackLitentToInterface(BYTE* packet, DWORD size);
 void callbackLiteningToServer(BYTE* packet, DWORD size);
+
+std::string readingIp();
 
 
 std::string GetVolumeSerialNumber();
