@@ -5,8 +5,8 @@
 #include <windows.h>
 #include <vector>
 #include <string>
-
 #include "Server.h"
+#include "Lobby.h"
 
 using std::setw;
 
@@ -20,6 +20,10 @@ int main() {
     std::cout << getIP();
     Server server;
     server.startListening(callbackLiteningToSerser);
+
+    
+    Lobby lobby(&server, getIP());
+
 
 
     //std::cout << "\n\n";
@@ -36,8 +40,16 @@ int main() {
         std::string a;
         std::cin >> a;
 
-        server.sendData(a);
-            
+        if (a == "1") {
+            lobby.joinlLobby();
+        }        
+        if (a == "2") {
+            lobby.getLobbyMembers();
+        }        
+        if (a == "3") {
+            lobby.leaveLobby();
+        }
+        
         if (a == "0") {
             break;
         }

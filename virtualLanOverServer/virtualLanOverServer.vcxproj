@@ -136,6 +136,7 @@ ws2_32.lib;</AdditionalDependencies>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="functions.cpp" />
+    <ClCompile Include="Lobby.cpp" />
     <ClCompile Include="Packet.cpp" />
     <ClCompile Include="Server.cpp" />
     <ClCompile Include="sourse.cpp" />
@@ -143,6 +144,7 @@ ws2_32.lib;</AdditionalDependencies>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="functions.h" />
+    <ClInclude Include="Lobby.h" />
     <ClInclude Include="Packet.h" />
     <ClInclude Include="Server.h" />
     <ClInclude Include="wintun.h" />
