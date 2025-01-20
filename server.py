@@ -53,11 +53,12 @@ def handle_command(command, socket):
     if(parsed[1] == "join"):
 
         if(is_valid_ipv4(parsed[2]) and parsed[2] not in lobby_list):
-
             lobby_list[parsed[2]] = socket
-            socket.send(b"command join 1")
+            print(b"command join 1")
+            socket.send(b"command join 1 ")
+            print(parsed)
         else:
-            socket.send(b"command join 0")
+            socket.send(b"command join 0 ")
     
     if(parsed[1] == "list"):
 
@@ -67,16 +68,16 @@ def handle_command(command, socket):
                 a+= i + "\n"
             socket.send(a.encode())
         
-        else:socket.send(b"command list 0")
+        else:socket.send(b"command list 0 ")
 
     if(parsed[1] == "leave"):
 
         if(is_valid_ipv4(parsed[2]) and parsed[2] in lobby_list and isClientJoin(socket)):
 
             del lobby_list[parsed[2]]
-            socket.send(b"command leave 1")
+            socket.send(b"command leave 1 ")
         
-        else:socket.send(b"command leave 0")
+        else:socket.send(b"command leave 0 ")
 
 
 
@@ -106,6 +107,7 @@ def handle_client(client_socket, client_address):
                 forwardPackets(data)
             else:
                 client_socket.send(b"command error")
+
 
     except Exception as e:
         print(f"Error handling client {client_address}: {e}")

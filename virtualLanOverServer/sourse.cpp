@@ -14,6 +14,7 @@ int main() {
 
     std::cout << "start listening on interface\n";
     server.startListening(callbackLiteningToServer);
+    lobby.startCheckConnection();
     wintunManager.startListening(callbackLitentToInterface);
 
     std::cout << getIP() ;
@@ -51,6 +52,11 @@ int main() {
             std::string str;
             std::cin >> str;
             lobby.sendData(str);
+        }
+        if (a == "5") {
+
+            lobby.reconnect();
+
         }
         if (a == "0") {
             break;

@@ -27,7 +27,6 @@ void callbackLiteningToServer(BYTE* packet, DWORD size)
     if (startsWithCommand(packet, size)) {
 
         lobby.handleResponse(packet, size);
-        std::cout << "command arrive\n";
 
     }else{
         wintunManager.sendPacket(packet, size);

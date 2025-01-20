@@ -17,7 +17,9 @@ public:
 
 	Lobby(Server* server, std::string myip) : server(server), myip(myip) {
 
+		joinlLobby();
 	}
+
 
 	
 	Server* server;
@@ -26,8 +28,34 @@ public:
 
 	bool join = false;
 
+	void startCheckConnection() {
+		std::thread listen(&Lobby::checkConnection, this);
+		listen.detach(); // Detach the thread if you don't want to join it later
+	}
+
+	void checkConnection() {
+		while (!server->END)
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+			if (!server->connected) {
+				memberList.clear();
+				join = false;
+				server->reconnect();
+			}
+			else if (server->connected && !join) {
+				joinlLobby();
+			}
+			else {
+
+				getLobbyMembers();
+			}
+		}
+	}
+
 	void joinlLobby() {
 		server->sendData("command join " + myip);
+		std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+		getLobbyMembers();
 	}
 
 	void getLobbyMembers() {
@@ -60,6 +88,11 @@ public:
 	}
 
 
+	void reconnect() {
+		server->reconnect();
+	}
+
+
 	void handleResponse(BYTE* command, DWORD size) {
 
 		vector<std::string> tokens;
@@ -79,18 +112,15 @@ public:
 
 			if (tokens[2] == "1") {
 				join = true;
-				cout << "joined\n";
+
 			}else if(tokens[2] == "0"){}
 		}		
 		if (tokens[1] == "list") {
 			if (tokens[2] == "1") {
 
 				updateLobbyList(tokens);
-				cout << "list updated\n";
 
-			}else if(tokens[2] == "0"){
-				join = false;
-			}
+			}else if(tokens[2] == "0"){}
 		}
 
 		if (tokens[1] == "leave") {

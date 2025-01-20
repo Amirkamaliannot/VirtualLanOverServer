@@ -11,10 +11,10 @@
 class Server
 {
 public:
-    SOCKET clientSocket;
+    SOCKET* clientSocket = new SOCKET;
     std::string serverAddress;
     int port = 5001;
-
+    bool connected = false;
     bool END = false;
 
     Server(std::string server):serverAddress(server){
@@ -24,14 +24,16 @@ public:
     }
 
     ~Server() {
-        // Clean up
-        closesocket(clientSocket);
+        closesocket(*clientSocket);
+        delete clientSocket;
         WSACleanup();
     }
 
     void Initialize();
 
     void connection();
+
+    void reconnect();
 
     void Listening(void (*callback)(BYTE*, DWORD));
 
