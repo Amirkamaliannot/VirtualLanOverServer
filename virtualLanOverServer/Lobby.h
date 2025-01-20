@@ -66,7 +66,7 @@ public:
 
 	void updateLobbyList(vector<std::string> tokens) {
 		memberList.clear();
-		for (int i = 2; i < tokens.size(); i++) {
+		for (int i = 3; i < tokens.size()-1; i++) {
 			Client client{tokens[i]};
 			memberList.push_back(client);
 		}

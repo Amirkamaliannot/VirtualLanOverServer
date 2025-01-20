@@ -10,11 +10,8 @@ def forwardPackets(Data):
     unpackData = zlib.decompress(Data)
     ip = get_destination_ip(unpackData)
 
-    print(ip)
     if( (ip and ip in lobby_list)):
         lobby_list[ip].send(Data)
-        print(unpackData)
-        print("forward")
 
 
 def get_destination_ip(raw_pkt):
@@ -35,7 +32,7 @@ def is_valid_ipv4(ip: str) -> bool:
     parts = ip.split(".")
 
     # IPv4 must have exactly 4 parts
-    if (len(parts) != 4  or parts[0] != "10"):
+    if (len(parts) != 4  or parts[0] != "100"):
         return False
 
     for part in parts:
@@ -68,7 +65,7 @@ def handle_command(command, socket):
         if(is_valid_ipv4(parsed[2]) and parsed[2] in lobby_list  and isClientJoin(socket)):
             a = "command list 1 "
             for i in lobby_list:
-                a+= i + "\n"
+                a+= i + " "
             socket.send(a.encode())
         
         else:socket.send(b"command list 0 ")

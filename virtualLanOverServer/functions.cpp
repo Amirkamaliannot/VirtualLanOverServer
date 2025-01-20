@@ -18,16 +18,16 @@ void callbackLitentToInterface(BYTE* packet, DWORD size)
     Packet temp = Packet(packet, false, size);
 
     for (int i = 0; i < lobby.memberList.size(); i++) {
-
         if (lobby.join && strcmp(temp.dst_ip, lobby.memberList[i].ip.c_str() ) == 0) {
             
-            auto start = std::chrono::high_resolution_clock::now();
+            //auto start = std::chrono::high_resolution_clock::now();
             Data compress = compressZlib(packet, size);
-            auto end = std::chrono::high_resolution_clock::now();
-            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-            std::cout << "Time taken by function: " << duration.count() << " microseconds\n";
+            //auto end = std::chrono::high_resolution_clock::now();
+            //auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+            //std::cout << "Time taken by function: " << duration.count() << " microseconds\n";
             server.sendData(compress.data, compress.size);
             delete[] compress.data;
+            break;
         }
     }
 }
@@ -39,10 +39,13 @@ void callbackLiteningToServer(BYTE* packet, DWORD size)
         lobby.handleResponse(packet, size);
 
     }else{
+        //auto start = std::chrono::high_resolution_clock::now();
         Data Decompress = DecompressZlib(packet, size);
+        //auto end = std::chrono::high_resolution_clock::now();
+        //auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+        //std::cout << "Time taken by function: " << duration.count() << " microseconds\n";
         wintunManager.sendPacket(Decompress.data, Decompress.size);
         delete[] Decompress.data;
-        std::cout << "miror\n";
     }
 }
 
@@ -83,7 +86,7 @@ std::string GetVolumeSerialNumber()
 std::string getIP()
 {
     std::string serial = GetVolumeSerialNumber();
-    std::string ip = "10";
+    std::string ip = "100";
     for (int i = 0; i < 3; i++) {
         ip += ".";
         auto a = serial[i*2] + serial[i*2 + 1];
@@ -127,7 +130,7 @@ Data compressLZ4(BYTE* input, DWORD inputSize)
 }
 
 Data compressZlib(BYTE* input, DWORD inputSize) {
-    std::cout << "Uncompressed size: " << inputSize << " bytes\n";
+    //std::cout << "Uncompressed size: " << inputSize << " bytes\n";
 
     // Calculate maximum compressed size
     uLong maxCompressedSize = compressBound(inputSize);
@@ -143,7 +146,7 @@ Data compressZlib(BYTE* input, DWORD inputSize) {
     );
 
     if (compressResult == Z_OK) {
-        std::cout << "Compressed size: " << compressedSize << " bytes\n";
+        //std::cout << "Compressed size: " << compressedSize << " bytes\n";
     }
     else {
         std::cerr << "Compression failed with error code: " << compressResult << std::endl;
@@ -176,30 +179,32 @@ Data DecompressLZ4(BYTE* compressedData, int compressedSize)
     return Data{ compressedData , compressedSize };
 }
 Data DecompressZlib(BYTE* compressedData, int compressedSize) {
-
-    int inputSize = 1500; //size of MTU
     // Allocate memory for decompressed data
-    BYTE* decompressedData = new BYTE[inputSize];
+
+    int maxDecompressedSize = 1500;
+    BYTE* decompressedData = new BYTE[maxDecompressedSize];
+    uLong decompressedSize = maxDecompressedSize;
 
     // Decompress the data using zlib
-    uLong decompressedSize = inputSize;
     int decompressResult = uncompress(
         reinterpret_cast<Bytef*>(decompressedData), &decompressedSize, // Output buffer and size
         reinterpret_cast<const Bytef*>(compressedData), compressedSize // Compressed data
     );
 
     if (decompressResult == Z_OK) {
-        //std::cout << "Decompression successful! Data: "<< "\n";
-        //for (int i = 0; i < inputSize; i++) {
-        //    cout << decompressedData[i];
-        //}
-        //cout << "\n";
+        //std::cout << "Decompression successful! Decompressed size: " << decompressedSize << "\n";
+    }
+    else if (decompressResult == Z_BUF_ERROR) {
+        std::cerr << "Decompression failed: Output buffer too small.\n";
+    }
+    else if (decompressResult == Z_DATA_ERROR) {
+        std::cerr << "Decompression failed: Data is corrupted or invalid.\n";
     }
     else {
-        std::cerr << "Decompression failed with error code: " << decompressResult << "\n";
+        std::cerr << "Decompression failed with unknown error code: " << decompressResult << "\n";
     }
 
-    return Data{ compressedData , compressedSize };
+    return Data{ decompressedData, (decompressResult == Z_OK) ? (int)decompressedSize : 0 };
 }
 
 ;
