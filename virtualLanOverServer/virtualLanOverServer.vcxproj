@@ -137,6 +137,8 @@ ws2_32.lib;</AdditionalDependencies>
   <ItemGroup>
     <ClCompile Include="functions.cpp" />
     <ClCompile Include="Lobby.cpp" />
+    <ClCompile Include="lz4.c" />
+    <ClCompile Include="lz4hc.c" />
     <ClCompile Include="Packet.cpp" />
     <ClCompile Include="Server.cpp" />
     <ClCompile Include="sourse.cpp" />
@@ -145,6 +147,8 @@ ws2_32.lib;</AdditionalDependencies>
   <ItemGroup>
     <ClInclude Include="functions.h" />
     <ClInclude Include="Lobby.h" />
+    <ClInclude Include="lz4.h" />
+    <ClInclude Include="lz4hc.h" />
     <ClInclude Include="Packet.h" />
     <ClInclude Include="Server.h" />
     <ClInclude Include="wintun.h" />

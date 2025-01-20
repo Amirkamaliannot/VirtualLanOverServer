@@ -17,6 +17,14 @@
 #include "WintunManager.h"
 #include "Server.h"
 #include "Lobby.h"
+#include "lz4.h"
+#include "lz4hc.h"
+
+struct Data
+{
+    BYTE* data;
+    int size;
+};
 
 extern std::wstring serverIP;
 extern Server server;
@@ -34,3 +42,8 @@ std::string GetVolumeSerialNumber();
 std::string getIP();
 
 bool startsWithCommand(const BYTE* data, size_t dataSize);
+
+Data compressLZ4(BYTE* input, DWORD inputSize);
+Data compressZlib(BYTE* input, DWORD inputSize);
+Data DecompressLZ4(BYTE* compressedData, int compressedSize);
+Data DecompressZlib(BYTE* compressedData, int compressedSize);

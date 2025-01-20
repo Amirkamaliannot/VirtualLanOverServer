@@ -1,16 +1,19 @@
 import socket
 import threading
 import struct
-
+import zlib
 
 lobby_list = {}
 
-def forwardPackets(packet):
-    ip = get_destination_ip(packet)
+def forwardPackets(Data):
+
+    unpackData = zlib.decompress(Data)
+    ip = get_destination_ip(unpackData)
 
     print(ip)
-    if(ip and ip in lobby_list):
-        lobby_list[ip].send(packet)
+    if( (ip and ip in lobby_list)):
+        lobby_list[ip].send(Data)
+        print(unpackData)
         print("forward")
 
 
@@ -97,10 +100,9 @@ def handle_client(client_socket, client_address):
     try:
         while True:
             # Receive data from the client
-            data = client_socket.recv(1024)
+            data = client_socket.recv(1500)
             if not data:
                 break  # If no data is received, close the connection
-
             elif(data.startswith(b"command")):
                 handle_command(data.decode('utf-8'), client_socket)
             elif(isClientJoin(client_socket)):
