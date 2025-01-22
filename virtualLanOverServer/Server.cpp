@@ -74,7 +74,7 @@ void Server::reconnect() {
 void Server::Listening(void (*callback)(BYTE*, DWORD))
 {
     // Send and receive data
-    char buffer[1024];
+    char buffer[1500];
     std::string message;
 
     while (!END) {
